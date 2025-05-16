@@ -74,6 +74,7 @@ func clone(kt *kit.Kit, oldFlow model.Flow, oldTaskList []model.Task, opt *Clone
 		Reason:    nil,
 		Worker:    nil,
 		Tasks:     make([]model.Task, len(oldTaskList)),
+		TenantID:  kt.TenantID,
 		Creator:   kt.User,
 		Reviser:   kt.User,
 	}
@@ -95,6 +96,7 @@ func clone(kt *kit.Kit, oldFlow model.Flow, oldTaskList []model.Task, opt *Clone
 			State:      mapCloneTaskState(old.State),
 			Reason:     nil,
 			Result:     "",
+			TenantID:   kt.TenantID,
 			Creator:    kt.User,
 			Reviser:    kt.User,
 		}

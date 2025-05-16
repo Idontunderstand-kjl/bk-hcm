@@ -102,10 +102,26 @@ func (wd *watchDog) watchWrapper(do func(kt *kit.Kit) error) {
 		}
 
 		kt := NewKit()
-		if err := do(kt); err != nil {
-			logs.Errorf("%s: watch dog do watch func failed, err: %v, rid: %s", constant.AsyncTaskWarnSign,
-				err, kt.Rid)
+		tenantIDs, err := listTenants(kt)
+		if err != nil {
+			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
+			continue
 		}
+
+		if len(tenantIDs) == 0 {
+			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
+			continue
+		}
+
+		for _, tenantID := range tenantIDs {
+			kt := NewKit()
+			kt.TenantID = tenantID
+			if err := do(kt); err != nil {
+				logs.Errorf("%s: watch dog do watch func failed, err: %v, rid: %s",
+					constant.AsyncTaskWarnSign, err, kt.Rid)
+			}
+		}
+
 		time.Sleep(wd.watchIntervalSec)
 	}
 
@@ -144,12 +160,12 @@ func (wd *watchDog) handleExpiredTasks(kt *kit.Kit) error {
 	}
 	tasks, err := wd.bd.ListTask(kt, input)
 	if err != nil {
-		logs.Errorf("list expired tasks failed, err: %v, rid: %s", err, kt.Rid)
+		logs.Errorf("list expired tasks failed , err: %v, rid: %s", err, kt.Rid)
 		return err
 	}
 
 	if len(tasks) == 0 {
-		logs.V(3).Infof("handleExpiredTasks not found task, skip, rid: %s", kt.Rid)
+		logs.V(3).Infof("handleExpiredTasks not found task , skip, rid: %s", kt.Rid)
 		return nil
 	}
 
@@ -206,10 +222,12 @@ func (wd *watchDog) handleScheduledNotExistWorkerFlow(kt *kit.Kit) error {
 
 	flows, err := wd.queryNotExistNodesFlowByState(kt, enumor.FlowScheduled)
 	if err != nil {
+		logs.Errorf("queryNotExistNodesFlowByState failed, err: %v, rid: %s", err, kt.Rid)
 		return err
 	}
 
 	if len(flows) == 0 {
+		logs.V(3).Infof("no scheduled flows to handle, skip, rid: %s", kt.Rid)
 		return nil
 	}
 
@@ -228,7 +246,8 @@ func (wd *watchDog) handleScheduledNotExistWorkerFlow(kt *kit.Kit) error {
 		return err
 	}
 
-	logs.Infof("handleScheduledNotExistWorkerFlow success, count: %d, ids: %v, rid: %s", len(ids), ids, kt.Rid)
+	logs.Infof("handleScheduledNotExistWorkerFlow success, count: %d, ids: %v, rid: %s",
+		kt.TenantID, len(ids), ids, kt.Rid)
 
 	return nil
 }
@@ -241,6 +260,7 @@ func (wd *watchDog) queryNotExistNodesFlowByState(kt *kit.Kit, state enumor.Flow
 	}
 	if len(nodes) == 0 {
 		//  can not get node list sometimes, skip
+		logs.V(3).Infof("no alive nodes found, skip query flows, rid: %s", kt.Rid)
 		return nil, nil
 	}
 
@@ -275,6 +295,7 @@ func (wd *watchDog) handleRunningNotExistWorkerFlow(kt *kit.Kit) error {
 
 	flows, err := wd.queryNotExistNodesFlowByState(kt, enumor.FlowRunning)
 	if err != nil {
+		logs.Errorf("queryNotExistNodesFlowByState failed, err: %v, rid: %s", err, kt.Rid)
 		return err
 	}
 
@@ -318,12 +339,14 @@ func (wd *watchDog) handleRunningFlow(kt *kit.Kit, flow model.Flow) error {
 	// 根据任务流ID获取对应的任务集合
 	taskModels, err := listTaskByFlowID(kt, wd.bd, flow.ID)
 	if err != nil {
+		logs.Errorf("list task by flowID failed, flowID: %s, err: %v, rid: %s", flow.ID, err, kt.Rid)
 		return err
 	}
 
 	// 构造执行流树
 	root, err := BuildTaskRoot(taskModels)
 	if err != nil {
+		logs.Errorf("build task root failed, flowID: %s, err: %v, rid: %s", flow.ID, err, kt.Rid)
 		return err
 	}
 
@@ -358,6 +381,7 @@ func (wd *watchDog) handleRunningFlow(kt *kit.Kit, flow model.Flow) error {
 
 	// 否则，找出所有处于执行状态的节点，判断它的执行节点是否已经退出，如果退出将Task回滚或者置于失败状态。
 	if err = wd.handleRunningTasks(kt, flow, ids); err != nil {
+		logs.Errorf("handle running tasks failed, err: %v, rid: %s", err, kt.Rid)
 		return err
 	}
 

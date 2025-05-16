@@ -231,6 +231,7 @@ func (db *mysql) CreateFlow(kt *kit.Kit, flow *model.Flow) (string, error) {
 				DependOn:   dependOnToStringArray(one.DependOn),
 				State:      taskState,
 				Reason:     new(tableasync.Reason),
+				TenantID:   kt.TenantID,
 				Creator:    kt.User,
 				Reviser:    kt.User,
 			})

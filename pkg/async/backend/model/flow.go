@@ -41,7 +41,8 @@ type Flow struct {
 	CreatedAt string             `json:"created_at"`
 	UpdatedAt string             `json:"updated_at"`
 
-	Tasks []Task `json:"tasks"`
+	Tasks    []Task `json:"tasks"`
+	TenantID string `json:"tenant_id"`
 }
 
 // CreateValidate Flow.
@@ -91,6 +92,10 @@ func (f Flow) UpdateValidate() error {
 
 	if len(f.Name) != 0 {
 		return errors.New("name can not set")
+	}
+
+	if len(f.TenantID) != 0 {
+		return errors.New("tenant_id can not set")
 	}
 
 	if len(f.Creator) != 0 {

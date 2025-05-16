@@ -39,7 +39,7 @@ func (p *producer) AddTemplateFlow(kt *kit.Kit, opt *AddTemplateFlowOption) (id 
 
 	tpl, exist := action.GetTpl(opt.Name)
 	if !exist {
-		return "", fmt.Errorf("flow tempalte: %s not found", opt.Name)
+		return "", fmt.Errorf("flow tempalte: %s not found ", opt.Name)
 	}
 
 	if err = validateTplUseParam(kt, tpl, opt); err != nil {

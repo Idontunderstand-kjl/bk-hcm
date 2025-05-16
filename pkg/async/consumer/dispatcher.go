@@ -72,9 +72,26 @@ func (d *Dispatcher) WatchPendingFlow() {
 		default:
 		}
 
+		// 是否有必要每次循环都重新拿到所有租户id？我觉得要，因为可能有新租户来了
 		kt := NewKit()
-		if err := d.Do(kt); err != nil {
-			logs.Errorf("%s: dispatcher do failed, err: %v, rid: %s", constant.AsyncTaskWarnSign, err, kt.Rid)
+		tenantIDs, err := listTenants(kt)
+		if err != nil {
+			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
+			continue
+		}
+
+		if len(tenantIDs) == 0 {
+			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
+			continue
+		}
+
+		for _, tenantID := range tenantIDs {
+			kt := NewKit()
+			kt.TenantID = tenantID
+			if err := d.Do(kt); err != nil {
+				logs.Errorf("%s: dispatcher do failed, err: %v, rid: %s",
+					constant.AsyncTaskWarnSign, err, kt.Rid)
+			}
 		}
 
 		time.Sleep(d.watchIntervalSec)

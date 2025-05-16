@@ -41,6 +41,7 @@ type Task struct {
 	State      enumor.TaskState   `json:"state"`
 	Reason     *tableasync.Reason `json:"reason"`
 	Result     types.JsonField    `json:"result"`
+	TenantID   string             `json:"tenant_id"`
 	Creator    string             `json:"creator"`
 	Reviser    string             `json:"reviser"`
 	CreatedAt  string             `json:"created_at"`
@@ -71,10 +72,6 @@ func (t *Task) CreateValidate() error {
 
 	if t.Reason != nil {
 		return errors.New("reason can not set")
-	}
-
-	if len(t.Creator) == 0 {
-		return errors.New("creator is required")
 	}
 
 	if len(t.Reviser) == 0 {

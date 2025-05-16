@@ -119,18 +119,36 @@ stopLoop:
 		}
 
 		kt := NewKit()
-		working, err := sch.runScheduledFlow(kt)
+		tenantIDs, err := listTenants(kt)
 		if err != nil {
-			logs.Errorf("%s: scheduler watch scheduled flow  failed, err: %v, rid: %s",
-				constant.AsyncTaskWarnSign, err, kt.Rid)
-			sch.sp.ExceptionSleep()
+			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
 			continue
 		}
 
-		if working {
-			// there are flows waiting to be executed, do a short sleep.
-			sch.sp.ShortSleep()
+		if len(tenantIDs) == 0 {
+			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
 			continue
+		}
+
+		// 此处待修改，休息时间应该根据任务数量动态改变？否则即使只有一个flow也固定休息时间？
+		// 而且目前是串行，cpu负载肯定打不满，因为分租户来查flow，同样拿固定数量flow情况下肯定比原本全局拿难很多
+		// 相当于每次都拿不到指定数量，但又必须休息固定时间
+		// 而且现在这样串行写，越后面的租户的flow要等越久才被调用，还会被前面租户的ExceptionSleep和ShortSleep阻塞
+		for _, tenantID := range tenantIDs {
+			kt := NewKit()
+			kt.TenantID = tenantID
+			working, err := sch.runScheduledFlow(kt)
+			if err != nil {
+				logs.Errorf("%s: scheduler watch scheduled flow  failed, err: %v, rid: %s",
+					constant.AsyncTaskWarnSign, err, kt.Rid)
+				sch.sp.ExceptionSleep()
+				continue
+			}
+			if working {
+				// there are flows waiting to be executed, do a short sleep.
+				sch.sp.ShortSleep()
+				continue
+			}
 		}
 
 		sch.sp.NormalSleep()
@@ -177,17 +195,35 @@ stopLoop:
 		}
 
 		kt := NewKit()
-		working, err := sch.handleCanceledFlow(kt)
+		tenantIDs, err := listTenants(kt)
 		if err != nil {
-			logs.Errorf("%s: scheduler watch canceled failed, err: %v, rid: %s",
-				constant.AsyncTaskWarnSign, err, kt.Rid)
-			sch.sp.ExceptionSleep()
+			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
 			continue
 		}
 
-		if working {
-			sch.sp.ShortSleep()
+		if len(tenantIDs) == 0 {
+			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
 			continue
+		}
+
+		// 此处待修改，休息时间应该根据任务数量动态改变？否则即使只有一个flow也固定休息时间？
+		// 而且目前是串行，cpu负载肯定打不满，因为分租户来查flow，同样拿固定数量flow情况下肯定比原本全局拿难很多
+		// 相当于每次都拿不到指定数量，但又必须休息固定时间
+		// 而且现在这样串行写，越后面的租户的flow要等越久才被调用，还会被前面租户的ExceptionSleep和ShortSleep阻塞
+		for _, tenantID := range tenantIDs {
+			kt := NewKit() // 是否共享上面new的kit这样rid相同
+			kt.TenantID = tenantID
+			working, err := sch.handleCanceledFlow(kt)
+			if err != nil {
+				logs.Errorf("%s: scheduler watch canceled failed, err: %v, rid: %s",
+					constant.AsyncTaskWarnSign, err, kt.Rid)
+				sch.sp.ExceptionSleep()
+				continue
+			}
+			if working {
+				sch.sp.ShortSleep()
+				continue
+			}
 		}
 
 		sch.sp.NormalSleep()
@@ -209,21 +245,22 @@ func (sch *scheduler) handleCanceledFlow(kt *kit.Kit) (working bool, err error) 
 	}
 
 	for _, flow := range dbFlows {
-		logs.Infof("canceling flow: %s, rid: %s", flow.ID, kt.Rid)
+		logs.Infof("canceling flow : %s, rid: %s", flow.ID, kt.Rid)
 
 		// 清空任务树，阻止继续调度
 		sch.DeleteFlowTaskTree(flow.ID)
 		err = updateFlowToCancel(kt, sch.backend, flow.ID, cvt.PtrToVal(flow.Worker), enumor.FlowCancel)
 		if err != nil {
-			logs.Errorf("fail to update flow clear worker id, err: %v, flow id: %s rid: %s",
-				err, flow.ID, kt.Rid)
+			logs.Errorf("fail to update flow clear worker id, err: %v, flow id: %s rid: %s", err, flow.ID,
+				kt.Rid)
 			// keep canceling other flow
 			continue
 		}
 
 		err := sch.executor.CancelFlow(kt, flow.ID)
 		if err != nil {
-			logs.Errorf("fail to handle flow canceling, err: %v, flow id: %s, rid: %s", err, flow.ID, kt.Rid)
+			logs.Errorf("fail to handle flow canceling, err: %v, flow id: %s, rid: %s",
+				kt.TenantID, err, flow.ID, kt.Rid)
 			// keep canceling other flow
 			continue
 		}
