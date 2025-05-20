@@ -106,54 +106,64 @@ func (sch *scheduler) Start() {
 
 // flowWatcher 定期查询调度到该节点的flow
 func (sch *scheduler) scheduledFlowWatcher() {
-	sch.workerWg.Add(1)
+	workerCount := 3                          // 固定 worker 数量
+	tasks := make(chan string, workerCount*2) // 带缓冲的任务队列
 
-stopLoop:
+	// 启动固定数量的 worker（协程池）
+	var wg sync.WaitGroup
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for tenantID := range tasks { // 长期运行，直到 tasks 被关闭
+				kt := NewKit()
+				kt.TenantID = tenantID
+				working, err := sch.runScheduledFlow(kt)
+				if err != nil {
+					logs.Errorf("%s: scheduler watch scheduled flow failed for tenant %s, err: %v, rid: %s",
+						constant.AsyncTaskWarnSign, tenantID, err, kt.Rid)
+					sch.sp.ExceptionSleep()
+					continue
+				}
+				if working {
+					sch.sp.ShortSleep()
+				}
+			}
+		}()
+	}
+
+	// 主循环（分发任务）
 	for {
 		select {
 		case <-sch.closeCh:
 			logs.Infof("received stop signal, stop watch scheduled flow job success.")
-			break stopLoop
-
+			break
 		default:
 		}
 
+		// 获取租户列表
 		kt := NewKit()
 		tenantIDs, err := listTenants(kt)
 		if err != nil {
 			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
+			sch.sp.NormalSleep()
 			continue
 		}
 
 		if len(tenantIDs) == 0 {
 			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
-			continue
 		}
 
-		// 此处待修改，休息时间应该根据任务数量动态改变？否则即使只有一个flow也固定休息时间？
-		// 而且目前是串行，cpu负载肯定打不满，因为分租户来查flow，同样拿固定数量flow情况下肯定比原本全局拿难很多
-		// 相当于每次都拿不到指定数量，但又必须休息固定时间
-		// 而且现在这样串行写，越后面的租户的flow要等越久才被调用，还会被前面租户的ExceptionSleep和ShortSleep阻塞
+		// 分发任务到 worker
 		for _, tenantID := range tenantIDs {
-			kt := NewKit()
-			kt.TenantID = tenantID
-			working, err := sch.runScheduledFlow(kt)
-			if err != nil {
-				logs.Errorf("%s: scheduler watch scheduled flow  failed, err: %v, rid: %s",
-					constant.AsyncTaskWarnSign, err, kt.Rid)
-				sch.sp.ExceptionSleep()
-				continue
-			}
-			if working {
-				// there are flows waiting to be executed, do a short sleep.
-				sch.sp.ShortSleep()
-				continue
-			}
+			tasks <- tenantID
 		}
 
 		sch.sp.NormalSleep()
 	}
 
+	close(tasks) // 关闭 Channel，通知 worker 退出
+	wg.Wait()    // 等待所有 worker 结束
 	sch.workerWg.Done()
 }
 
@@ -183,52 +193,66 @@ func (sch *scheduler) queryCurrNodeFlow(kt *kit.Kit, state enumor.FlowState, lim
 
 // canceledFlowWatcher 查询当前节点上被取消的flow并执行task取消操作
 func (sch *scheduler) canceledFlowWatcher() {
-	sch.workerWg.Add(1)
+	workerCount := 3                          // 固定 worker 数量
+	tasks := make(chan string, workerCount*2) // 带缓冲的任务队列
 
-stopLoop:
+	// 启动固定数量的 worker（协程池）
+	var wg sync.WaitGroup
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for tenantID := range tasks { // 长期运行，直到 tasks 被关闭
+				kt := NewKit()
+				kt.TenantID = tenantID
+				working, err := sch.handleCanceledFlow(kt)
+				if err != nil {
+					logs.Errorf("%s: scheduler watch canceled failed for tenant %s, err: %v, rid: %s",
+						constant.AsyncTaskWarnSign, tenantID, err, kt.Rid)
+					sch.sp.ExceptionSleep()
+					continue
+				}
+				if working {
+					sch.sp.ShortSleep()
+				}
+			}
+		}()
+	}
+
+	// 主循环（分发任务）
 	for {
 		select {
 		case <-sch.closeCh:
 			logs.Infof("received stop signal, stop watch canceled flow job success.")
-			break stopLoop
+			break
 		default:
 		}
 
+		// 获取租户列表
 		kt := NewKit()
 		tenantIDs, err := listTenants(kt)
 		if err != nil {
 			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
+			sch.sp.NormalSleep()
 			continue
 		}
 
 		if len(tenantIDs) == 0 {
 			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
+			sch.sp.NormalSleep()
 			continue
 		}
 
-		// 此处待修改，休息时间应该根据任务数量动态改变？否则即使只有一个flow也固定休息时间？
-		// 而且目前是串行，cpu负载肯定打不满，因为分租户来查flow，同样拿固定数量flow情况下肯定比原本全局拿难很多
-		// 相当于每次都拿不到指定数量，但又必须休息固定时间
-		// 而且现在这样串行写，越后面的租户的flow要等越久才被调用，还会被前面租户的ExceptionSleep和ShortSleep阻塞
+		// 分发任务到 worker
 		for _, tenantID := range tenantIDs {
-			kt := NewKit() // 是否共享上面new的kit这样rid相同
-			kt.TenantID = tenantID
-			working, err := sch.handleCanceledFlow(kt)
-			if err != nil {
-				logs.Errorf("%s: scheduler watch canceled failed, err: %v, rid: %s",
-					constant.AsyncTaskWarnSign, err, kt.Rid)
-				sch.sp.ExceptionSleep()
-				continue
-			}
-			if working {
-				sch.sp.ShortSleep()
-				continue
-			}
+			tasks <- tenantID
 		}
 
 		sch.sp.NormalSleep()
 	}
 
+	close(tasks) // 关闭 Channel，通知 worker 退出
+	wg.Wait()    // 等待所有 worker 结束
 	sch.workerWg.Done()
 }
 

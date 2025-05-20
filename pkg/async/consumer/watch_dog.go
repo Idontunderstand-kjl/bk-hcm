@@ -94,6 +94,27 @@ func (wd *watchDog) Start() {
 
 // 定期处理异常任务流或任务
 func (wd *watchDog) watchWrapper(do func(kt *kit.Kit) error) {
+	workerCount := 3                          // 固定 worker 数量
+	tasks := make(chan string, workerCount*2) // 带缓冲的任务队列
+
+	// 启动固定数量的 worker（协程池）
+	var wg sync.WaitGroup
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for tenantID := range tasks { // 长期运行，直到 tasks 被关闭
+				kt := NewKit()
+				kt.TenantID = tenantID
+				if err := do(kt); err != nil {
+					logs.Errorf("%s: watch dog do watch func failed for tenant %s, err: %v, rid: %s",
+						constant.AsyncTaskWarnSign, tenantID, err, kt.Rid)
+				}
+			}
+		}()
+	}
+
+	// 主循环（分发任务）
 	for {
 		select {
 		case <-wd.closeCh:
@@ -101,30 +122,29 @@ func (wd *watchDog) watchWrapper(do func(kt *kit.Kit) error) {
 		default:
 		}
 
+		// 获取租户列表
 		kt := NewKit()
 		tenantIDs, err := listTenants(kt)
 		if err != nil {
 			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
+			time.Sleep(wd.watchIntervalSec)
 			continue
 		}
 
 		if len(tenantIDs) == 0 {
 			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
-			continue
 		}
 
+		// 分发任务到 worker
 		for _, tenantID := range tenantIDs {
-			kt := NewKit()
-			kt.TenantID = tenantID
-			if err := do(kt); err != nil {
-				logs.Errorf("%s: watch dog do watch func failed, err: %v, rid: %s",
-					constant.AsyncTaskWarnSign, err, kt.Rid)
-			}
+			tasks <- tenantID
 		}
 
 		time.Sleep(wd.watchIntervalSec)
 	}
 
+	close(tasks) // 关闭 Channel，通知 worker 退出
+	wg.Wait()    // 等待所有 worker 结束
 	wd.wg.Done()
 }
 

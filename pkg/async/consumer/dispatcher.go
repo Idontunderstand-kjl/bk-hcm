@@ -65,6 +65,27 @@ func (d *Dispatcher) Start() {
 
 // WatchPendingFlow 监听处于Pending状态的流，并派发到指定节点。
 func (d *Dispatcher) WatchPendingFlow() {
+	workerCount := 3                          // 固定 worker 数量
+	tasks := make(chan string, workerCount*2) // 带缓冲的任务队列
+
+	// 启动固定数量的 worker
+	var wg sync.WaitGroup
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for tenantID := range tasks { // 长期运行，直到 tasks 被关闭
+				kt := NewKit()
+				kt.TenantID = tenantID
+				if err := d.Do(kt); err != nil {
+					logs.Errorf("%s: dispatcher do failed for tenant %s, err: %v, rid: %s",
+						constant.AsyncTaskWarnSign, tenantID, err, kt.Rid)
+				}
+			}
+		}()
+	}
+
+	// 主循环（分发任务）
 	for {
 		select {
 		case <-d.closeCh:
@@ -72,31 +93,28 @@ func (d *Dispatcher) WatchPendingFlow() {
 		default:
 		}
 
-		// 是否有必要每次循环都重新拿到所有租户id？我觉得要，因为可能有新租户来了
 		kt := NewKit()
-		tenantIDs, err := listTenants(kt)
+		tenantIDs, err := listTenants(kt) // 获取租户列表
 		if err != nil {
 			logs.Errorf("failed to list tenants, err: %v, rid: %s", err, kt.Rid)
+			time.Sleep(d.watchIntervalSec)
 			continue
 		}
 
 		if len(tenantIDs) == 0 {
 			logs.V(3).Infof("currently no task flows to assign, skip handleRunningFlow, rid: %s", kt.Rid)
-			continue
 		}
 
+		// 分发任务到 worker
 		for _, tenantID := range tenantIDs {
-			kt := NewKit()
-			kt.TenantID = tenantID
-			if err := d.Do(kt); err != nil {
-				logs.Errorf("%s: dispatcher do failed, err: %v, rid: %s",
-					constant.AsyncTaskWarnSign, err, kt.Rid)
-			}
+			tasks <- tenantID
 		}
 
 		time.Sleep(d.watchIntervalSec)
 	}
 
+	close(tasks) // 关闭 Channel，通知 worker 退出
+	wg.Wait()    // 等待所有 worker 结束
 	d.wg.Done()
 }
 
