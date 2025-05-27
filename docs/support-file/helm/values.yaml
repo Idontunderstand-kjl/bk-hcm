@@ -132,6 +132,22 @@ authserver:
   ## Pod对应提供服务的port 与service里的targetPort必须一致
   port: 80
 
+  # 权限中心自动注册job配置
+  job:
+    # 是否启用权限中心自动注册job
+    enabled: true
+    # job的镜像参数配置
+    image:
+      repository: blueking/bk-hcm-authsync
+      tag:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 1024Mi
+      requests:
+        memory: 512Mi
+        cpu: 200m
+
 cloudserver:
   ## 镜像
   ##
@@ -646,13 +662,14 @@ apigwSync:
   enabled: true
   image:
     repository: blueking/bk-hcm-apigwsync
-    tag: 1.0.2
+    tag:
   ## 需注册的网关名
   apigwName: "bk-hcm"
   ## 蓝鲸 APIGateway url模板
   bkApiUrlTmpl: "http://bkapi.example.com/api/{api_name}"
   ## 网关负责人，多个使用英文逗号分隔
-  bkApigwManagers: "admin"
+  maintainer: "admin"
+  stageName: "prod"
   ## Pod
   resources:
     limits:

@@ -58,7 +58,7 @@ package: pre ui api ver changelog template
 	@echo -e "\033[32;1mPackage All Success!\n\033[0m"
 
 # 容器化编译
-docker: pre ui ver changelog template
+docker: pre ui ver changelog template api
 	@echo -e "\033[34;1mMake Dockering...\n\033[0m"
 	@cp -rf ${PRO_DIR}/docs/support-file/docker/* ${OUTPUT_DIR}/
 	@mv ${OUTPUT_DIR}/front ${OUTPUT_DIR}/bk-hcm-webserver/
@@ -88,10 +88,11 @@ template: pre
 # 添加Api文档到编译文件中
 api: pre
 	@echo -e "\033[34;1mPackaging API Docs...\033[0m"
-	@mkdir -p ${OUTPUT_DIR}/api/
-	@mkdir -p ${OUTPUT_DIR}/api/api-server
-	@cp -f docs/api-docs/api-server/api/bk_apigw_resources_bk-hcm.yaml ${OUTPUT_DIR}/api/api-server
-	@tar -czf ${OUTPUT_DIR}/api/api-server/zh.tgz -C docs/api-docs/api-server/docs zh
+	@mkdir -p ${OUTPUT_DIR}/bk-hcm-apigwsync/support-files/apidocs/
+	@cp -f docs/api-docs/api-server/api/bk_apigw_resources_bk-hcm.yaml ${OUTPUT_DIR}/bk-hcm-apigwsync/support-files/resources.yaml
+	@cp -f docs/api-docs/api-server/api/bk_apigw_definition_bk-hcm.yaml ${OUTPUT_DIR}/bk-hcm-apigwsync/support-files/definition.yaml
+	@cp -rf docs/api-docs/api-server/docs/zh ${OUTPUT_DIR}/bk-hcm-apigwsync/support-files/apidocs
+	@cp -rf docs/api-docs/api-server/bin ${OUTPUT_DIR}/bk-hcm-apigwsync/support-files/
 	@echo -e "\033[32;1mPackaging API Docs Done\n\033[0m"
 
 # 添加版本信息到编译文件中

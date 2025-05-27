@@ -15,9 +15,9 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: apigw-sync
-          image: {{ .Values.global.imageRegistry }}/{{ .Values.apigwSync.image.repository }}:v{{ default .Values.global.imageTag .Values.apigwSync.image.tag }}
+          image: {{ default .Values.global.imageRegistry .Values.image.registry }}/{{ .Values.apigwSync.image.repository }}:v{{ default .Values.image.tag .Values.apigwSync.image.tag }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
-          command: ["sync-apigateway"]
+          command: ["/data/bin/sync-apigateway.sh"]
           env:
             - name: BK_APIGW_NAME
               value: {{ .Values.apigwSync.apigwName }}
@@ -27,18 +27,22 @@ spec:
               value: {{ .Values.appCode }}
             - name: BK_APP_SECRET
               value: {{ .Values.appSecret }}
+            - name: BK_APP_TENANT_ID
+              value: {{ .Values.tenant.enabled | ternary "system" "default" | quote }}
+            - name: BK_HCM_STAGE_NAME
+              value: {{ .Values.apigwSync.stageName }}
             {{- if .Values.ingress.shareDomainEnable }}
-            - name: BK_HCM_API_HOST
+            - name: BK_HCM_HOST
               value: {{ printf "%s://%s" .Values.global.bkDomainScheme .Values.ingress.host }}
             - name: BK_HCM_API_URL_PATH_PREFIX
               value: "apigw/"
             {{- else}}
-            - name: BK_HCM_API_HOST
+            - name: BK_HCM_HOST
               value: {{ printf "%s://%s" .Values.global.bkDomainScheme .Values.ingress.apiserver.host }}
             - name: BK_HCM_API_URL_PATH_PREFIX
               value: ""
             {{- end }}
-            - name: BK_APIGW_MANAGERS
-              value: "{{ .Values.apigwSync.bkApigwManagers }}"
-          resources: {{ toYaml .Values.dataservice.resources | nindent 12 }}
+            - name: BK_HCM_MAINTAINER
+              value: "{{ .Values.apigwSync.maintainer }}"
+          resources: {{ toYaml .Values.apigwSync.resources | nindent 12 }}
 {{- end }}
