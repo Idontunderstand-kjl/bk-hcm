@@ -339,7 +339,7 @@ func getAssignedCvmInfo(kt *kit.Kit, cli *client.ClientSet, ids []string) ([]Pre
 		}
 		for _, detail := range resp.Details {
 			accountBizIDMap[detail.ID] = make(map[int64]struct{})
-			for _, bizID := range detail.BkBizIDs {
+			for _, bizID := range detail.UsageBizIDs {
 				accountBizIDMap[detail.ID][bizID] = struct{}{}
 			}
 		}
