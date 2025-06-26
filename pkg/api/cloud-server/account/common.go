@@ -72,7 +72,7 @@ func validateUsageBizIDs(bkBizIDs []int64) error {
 	return nil
 }
 
-// ValidateBizIDInUsageBizIDs validates that BizID is in UsageBizIDs.
+// validateBizIDInUsageBizIDs checks if bizID is in usageBizIDs or if usageBizIDs contains AttachedAllBiz.
 func validateBizIDInUsageBizIDs(bizID int64, usageBizIDs []int64) error {
 	if slice.IsItemInSlice(usageBizIDs, bizID) || (len(usageBizIDs) == 1 && usageBizIDs[0] == constant.AttachedAllBiz) {
 		return nil
@@ -80,15 +80,16 @@ func validateBizIDInUsageBizIDs(bizID int64, usageBizIDs []int64) error {
 	return fmt.Errorf("bk_biz_id %d is not in usage_biz_ids", bizID)
 }
 
-func validateResAccountBkBizIDs(bkBizIDs []int64) error {
-	if len(bkBizIDs) <= 0 {
-		return fmt.Errorf("invalid res account have no bizIDs")
+// validateResAccountBizIDs 校验资源账号管理业务和使用业务的合法性
+func validateResAccountBizIDs(bizID int64, usageBizIDs []int64) error {
+	// 管理业务合法性校验
+	if err := validateBizID(bizID); err != nil {
+		return err
 	}
-
-	if len(bkBizIDs) == 1 && bkBizIDs[0] == -1 {
-		return fmt.Errorf("invalid res account not assigned bizIDs")
+	// 校验使用业务是否包含管理业务，要求必须包含
+	if err := validateBizIDInUsageBizIDs(bizID, usageBizIDs); err != nil {
+		return err
 	}
-
 	return nil
 }
 
