@@ -24,10 +24,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"hcm/pkg/tools/slice"
 	"hcm/pkg/criteria/constant"
 	"hcm/pkg/criteria/validator"
 	"hcm/pkg/tools/json"
+	"hcm/pkg/tools/slice"
 )
 
 var (
@@ -44,16 +44,6 @@ var (
 func validateAccountName(name string) error {
 	if name != "" && !validAccountNameRegex.MatchString(name) {
 		return accountNameInvalidError
-	}
-	return nil
-}
-
-func validateBizID(bizID int64) error {
-	if bizID == 0 {
-		return fmt.Errorf("bk_biz_id can not be empty")
-	}
-	if bizID == constant.AttachedAllBiz {
-		return fmt.Errorf("bk_biz_id can not set all biz")
 	}
 	return nil
 }
@@ -80,26 +70,13 @@ func validateBizIDInUsageBizIDs(bizID int64, usageBizIDs []int64) error {
 	return fmt.Errorf("bk_biz_id %d is not in usage_biz_ids", bizID)
 }
 
-// validateResAccountBizIDs 校验资源账号管理业务和使用业务的合法性
-func validateResAccountBizIDs(bizID int64, usageBizIDs []int64) error {
-	// 管理业务合法性校验
-	if err := validateBizID(bizID); err != nil {
-		return err
-	}
-	// 校验使用业务是否包含管理业务，要求必须包含
-	if err := validateBizIDInUsageBizIDs(bizID, usageBizIDs); err != nil {
-		return err
-	}
-	return nil
-}
-
 // validateNonResAccountBizIDs 非资源账号的管理业务必须为空，使用业务数组长度只能为1，维持现状
 func validateNonResAccountBizIDs(bizID int64, usageBizIDs []int64) error {
 	if bizID != 0 {
 		return fmt.Errorf("bk_biz_id must be empty for non-resource account")
 	}
-	if len(usageBizIDs) != 1 {
-		return fmt.Errorf("usage_biz_ids must have exactly one item for non-resource account")
+	if len(usageBizIDs) > 1 {
+		return fmt.Errorf("usage_biz_ids must have at most one item for non-resource account")
 	}
 	return nil
 }

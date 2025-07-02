@@ -68,6 +68,6 @@ func (a *ApplicationOfCreateAwsCvm) GetItsmApprover(managers []string) []itsm.Va
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateAwsCvm) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateAwsCvm) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }

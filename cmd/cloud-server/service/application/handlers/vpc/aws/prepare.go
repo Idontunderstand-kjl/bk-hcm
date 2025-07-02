@@ -55,6 +55,6 @@ func (a *ApplicationOfCreateAwsVpc) GetItsmApprover(managers []string) []itsm.Va
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateAwsVpc) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateAwsVpc) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }

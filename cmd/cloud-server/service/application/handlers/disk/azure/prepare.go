@@ -53,6 +53,6 @@ func (a *ApplicationOfCreateAzureDisk) GetItsmApprover(managers []string) []itsm
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateAzureDisk) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateAzureDisk) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }

@@ -50,7 +50,7 @@ func (a *ApplicationOfAddAccount) RenderItsmForm() (string, error) {
 	}
 
 	// 云厂商特有信息
-	formItems = append(formItems, a.getVendorSpecificFormItems()...)
+	formItems = append(formItems, a.getCloudInfoFormItems()...)
 
 	// 负责人
 	formItems = append(formItems, formItem{Label: "责任人", Value: strings.Join(req.Managers, ",")})
@@ -58,7 +58,7 @@ func (a *ApplicationOfAddAccount) RenderItsmForm() (string, error) {
 	// 管理业务
 	bizName, err := a.GetBizName(req.BizID)
 	if err != nil {
-		return "", fmt.Errorf("get biz name failed, bk_biz_id: %v, err: %w", req.BizID, err)
+		return "", fmt.Errorf("get biz name failed, bk_biz_id: %v, err: %v", req.BizID, err)
 	}
 	formItems = append(formItems, formItem{Label: "管理业务", Value: bizName})
 
@@ -88,7 +88,7 @@ func (a *ApplicationOfAddAccount) RenderItsmForm() (string, error) {
 	return strings.Join(content, "\n"), nil
 }
 
-func (a *ApplicationOfAddAccount) getVendorSpecificFormItems() []formItem {
+func (a *ApplicationOfAddAccount) getCloudInfoFormItems() []formItem {
 	req := a.req
 	formItems := make([]formItem, 0) // 预分配足够容量
 

@@ -55,6 +55,6 @@ func (a *ApplicationOfCreateHuaWeiVpc) GetItsmApprover(managers []string) []itsm
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateHuaWeiVpc) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateHuaWeiVpc) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }

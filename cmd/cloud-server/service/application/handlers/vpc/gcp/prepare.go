@@ -55,6 +55,6 @@ func (a *ApplicationOfCreateGcpVpc) GetItsmApprover(managers []string) []itsm.Va
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateGcpVpc) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateGcpVpc) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }

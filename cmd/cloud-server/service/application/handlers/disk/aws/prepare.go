@@ -53,6 +53,6 @@ func (a *ApplicationOfCreateAwsDisk) GetItsmApprover(managers []string) []itsm.V
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateAwsDisk) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateAwsDisk) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }

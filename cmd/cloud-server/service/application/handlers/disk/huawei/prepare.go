@@ -53,6 +53,6 @@ func (a *ApplicationOfCreateHuaWeiDisk) GetItsmApprover(managers []string) []its
 }
 
 // GetUsageBizIDs 获取当前的业务IDs
-func (a *ApplicationOfCreateHuaWeiDisk) GetUsageBizIDs() []int64 {
+func (a *ApplicationOfCreateHuaWeiDisk) GetBkBizIDs() []int64 {
 	return []int64{a.req.BkBizID}
 }
