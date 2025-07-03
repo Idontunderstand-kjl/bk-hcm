@@ -7,81 +7,6 @@ info:
 schemes:
   - http
 paths:
-  /api/v1/cloud/cos/buckets/create:
-    post:
-      operationId: create_cos_bucket
-      description: 创建存储桶代理接口
-      tags:
-        - Cos
-      responses:
-        default:
-          description: ''
-      x-bk-apigateway-resource:
-        isPublic: true
-        allowApplyPermission: true
-        matchSubpath: false
-        backend:
-          type: HTTP
-          method: post
-          path: /api/v1/cloud/cos/buckets/create
-          matchSubpath: false
-          timeout: 30
-          upstreams: {}
-          transformHeaders: {}
-        authConfig:
-          userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
-  /api/v1/cloud/cos/buckets/delete:
-    delete:
-      operationId: delete_cos_bucket
-      description: 删除存储桶代理接口
-      tags:
-        - Cos
-      responses:
-        default:
-          description: ''
-      x-bk-apigateway-resource:
-        isPublic: true
-        allowApplyPermission: true
-        matchSubpath: false
-        backend:
-          type: HTTP
-          method: delete
-          path: /api/v1/cloud/cos/buckets/delete
-          matchSubpath: false
-          timeout: 30
-          upstreams: {}
-          transformHeaders: {}
-        authConfig:
-          userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
-  /api/v1/cloud/cos/buckets/list:
-    post:
-      operationId: list_cos_bucket
-      description: 查询存储桶代理接口
-      tags:
-        - Cos
-      responses:
-        default:
-          description: ''
-      x-bk-apigateway-resource:
-        isPublic: true
-        allowApplyPermission: true
-        matchSubpath: false
-        backend:
-          type: HTTP
-          method: post
-          path: /api/v1/cloud/cos/buckets/list
-          matchSubpath: false
-          timeout: 30
-          upstreams: {}
-          transformHeaders: {}
-        authConfig:
-          userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
   /api/v1/cloud/accounts/extensions/list:
     post:
       operationId: list_account_with_extension
@@ -95,18 +20,23 @@ paths:
         isPublic: true
         allowApplyPermission: true
         matchSubpath: false
+        enableWebsocket: false
         backend:
           type: HTTP
+          name: default
           method: post
           path: /{env.url_path_prefix}api/v1/cloud/accounts/extensions/list
           matchSubpath: false
           timeout: 30
-          upstreams: {}
-          transformHeaders: {}
+        pluginConfigs: []
         authConfig:
           userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        disabledStages:
+          - halo
+          - prod
+        descriptionEn: None
   /api/v1/cloud/accounts/list:
     post:
       operationId: list_account
@@ -120,18 +50,20 @@ paths:
         isPublic: true
         allowApplyPermission: true
         matchSubpath: false
+        enableWebsocket: false
         backend:
           type: HTTP
+          name: default
           method: post
           path: /api/v1/cloud/accounts/list
           matchSubpath: false
           timeout: 30
-          upstreams: {}
-          transformHeaders: {}
+        pluginConfigs: []
         authConfig:
           userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
   /api/v1/cloud/accounts/secrets/list:
     post:
       operationId: list_secret_key
@@ -145,18 +77,20 @@ paths:
         isPublic: true
         allowApplyPermission: true
         matchSubpath: false
+        enableWebsocket: false
         backend:
           type: HTTP
+          name: default
           method: post
           path: /{env.url_path_prefix}api/v1/cloud/accounts/secrets/list
           matchSubpath: false
           timeout: 30
-          upstreams: {}
-          transformHeaders: {}
+        pluginConfigs: []
         authConfig:
           userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
   /api/v1/cloud/vendors/{vendor}/bills/list:
     post:
       operationId: list_bill_in_resource
@@ -170,15 +104,502 @@ paths:
         isPublic: true
         allowApplyPermission: true
         matchSubpath: false
+        enableWebsocket: false
         backend:
           type: HTTP
+          name: default
           method: post
           path: /api/v1/cloud/vendors/{vendor}/bills/list
           matchSubpath: false
           timeout: 30
-          upstreams: {}
-          transformHeaders: {}
+        pluginConfigs: []
         authConfig:
           userVerifiedRequired: true
-        disabledStages: []
-        descriptionEn:
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/cos/buckets/create:
+    post:
+      operationId: create_cos_bucket
+      description: 创建存储桶代理接口
+      tags:
+        - Cos
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/cos/buckets/create
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: true
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/cos/buckets/delete:
+    delete:
+      operationId: delete_cos_bucket
+      description: 删除存储桶代理接口
+      tags:
+        - Cos
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: delete
+          path: /api/v1/cloud/cos/buckets/delete
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: true
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/cos/buckets/list:
+    post:
+      operationId: list_cos_bucket
+      description: 查询存储桶代理接口
+      tags:
+        - Cos
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/cos/buckets/list
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: true
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/applications/approve:
+    post:
+      operationId: approve_application
+      description: ITSM回调接口
+      tags:
+        - Callback
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/applications/approve
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/create:
+    post:
+      operationId: create_security_group
+      description: 创建安全组
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/create
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/{id}:
+    get:
+      operationId: get_security_group
+      description: 查询安全组详情
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: get
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/{id}
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: [ ]
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+    patch:
+      operationId: update_security_group
+      description: 更新安全组（aws不支持更新）
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: patch
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/{id}
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/batch:
+    delete:
+      operationId: batch_delete_security_group
+      description: 批量删除安全组
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: delete
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/batch
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/list:
+    post:
+      operationId: list_security_group
+      description: 查询安全组列表
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/list
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/{id}/clone:
+    post:
+      operationId: clone_security_group
+      description: 克隆安全组(仅支持腾讯云)
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/{id}/clone
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/associate/cvms/batch:
+    post:
+      operationId: batch_associate_security_group
+      description: 安全组批量绑定CVM
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/associate/cvms/batch
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/disassociate/cvms/batch:
+    post:
+      operationId: batch_disassociate_security_group
+      description: 安全组批量解绑主机
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/disassociate/cvms/batch
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/associate/load_balancers:
+    post:
+      operationId: associate_load_balancer_security_group
+      description: 给指定的负载均衡，批量关联安全组（仅支持：tcloud）
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/associate/load_balancers
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/security_groups/disassociate/load_balancers:
+    post:
+      operationId: disassociate_load_balancer_security_group
+      description: 给指定的负载均衡，取消与安全组的关联（仅支持：tcloud）
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/security_groups/disassociate/load_balancers
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/create:
+    post:
+      operationId: create_security_group_rule
+      description: 安全组规则创建
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/create
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/batch/update:
+    put:
+      operationId: update_security_group_rule
+      description: 安全组规则更新
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: put
+          path: /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/batch/update
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/{id}:
+    delete:
+      operationId: batch_delete_security_group_rule
+      description: 安全组规则删除
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: delete
+          path: /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/{id}
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
+  /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/list:
+    post:
+      operationId: list_security_group_rule
+      description: 安全组规则列表
+      tags:
+        - SecurityGroup
+      responses:
+        default:
+          description: ''
+      x-bk-apigateway-resource:
+        isPublic: true
+        allowApplyPermission: true
+        matchSubpath: false
+        enableWebsocket: false
+        backend:
+          type: HTTP
+          name: default
+          method: post
+          path: /api/v1/cloud/bizs/{bk_biz_id}/vendors/{vendor}/security_groups/{security_group_id}/rules/list
+          matchSubpath: false
+          timeout: 30
+        pluginConfigs: []
+        authConfig:
+          userVerifiedRequired: false
+          appVerifiedRequired: true
+          resourcePermissionRequired: true
+        descriptionEn: None
