@@ -22,11 +22,12 @@ package account
 import (
 	"fmt"
 
-	logicsaccount "hcm/cmd/cloud-server/logics/account"
 	proto "hcm/pkg/api/cloud-server/account"
+	"hcm/pkg/api/core"
 	dataproto "hcm/pkg/api/data-service/cloud"
 	"hcm/pkg/criteria/enumor"
 	"hcm/pkg/criteria/errf"
+	"hcm/pkg/dal/dao/tools"
 	"hcm/pkg/iam/meta"
 	"hcm/pkg/logs"
 	"hcm/pkg/rest"
@@ -42,12 +43,22 @@ func (a *accountSvc) UpdateAccount(cts *rest.Contexts) (interface{}, error) {
 
 	// 根据accountID拿到账户类型然后才进行请求参数校验，因为资源账号需要额外的校验
 	accountID := cts.PathParameter("account_id").String()
-	accountInfo, err := logicsaccount.GetAccountInfo(cts.Kit, a.client.DataService(), accountID)
+	listReq := &dataproto.AccountListReq{
+		Filter: tools.EqualExpression("id", accountID),
+		Page:   core.NewDefaultBasePage(),
+	}
+	result, err := a.client.DataService().Global.Account.List(cts.Kit.Ctx, cts.Kit.Header(), listReq)
 	if err != nil {
+		logs.Errorf("list account failed, err: %v, rid: %s", err, cts.Kit.Rid)
 		return nil, err
 	}
 
-	if err := req.Validate(accountInfo); err != nil {
+	if len(result.Details) == 0 {
+		logs.Errorf("account: %s not found, rid: %s", accountID, cts.Kit.Rid)
+		return nil, errf.Newf(errf.RecordNotFound, "account: %s not found", accountID)
+	}
+
+	if err := req.Validate(result.Details[0]); err != nil {
 		return nil, errf.NewFromErr(errf.InvalidParameter, err)
 	}
 
