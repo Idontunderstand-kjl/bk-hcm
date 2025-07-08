@@ -8,7 +8,6 @@ metadata:
     {{- include "common.labels.standard" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   ttlSecondsAfterFinished: 600
   completions: 1
