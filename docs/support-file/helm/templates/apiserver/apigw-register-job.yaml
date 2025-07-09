@@ -53,6 +53,8 @@ spec:
             {{- end }}
             - name: BK_HCM_MAINTAINER
               value: "{{ .Values.apigwRegister.maintainer }}"
+            - name: BK_CWAITSM_APP_CODE
+              value: {{ .Values.apigwRegister.cwAitsmAppCode }}
             {{- if .Values.apigwRegister.extraEnv }}
             {{- range $key, $value := .Values.apigwRegister.extraEnv }}
             - name: {{ $key }}
