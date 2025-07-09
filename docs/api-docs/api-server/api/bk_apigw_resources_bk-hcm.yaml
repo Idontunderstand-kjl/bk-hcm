@@ -33,9 +33,6 @@ paths:
           userVerifiedRequired: true
           appVerifiedRequired: true
           resourcePermissionRequired: true
-        disabledStages:
-          - halo
-          - prod
         descriptionEn: None
   /api/v1/cloud/accounts/list:
     post:

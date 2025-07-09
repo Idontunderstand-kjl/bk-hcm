@@ -34,9 +34,9 @@ apigateway:
 # 定义环境信息，用于命令 `sync_apigw_stage`
 stages:
   - name: {{ environ.BK_HCM_STAGE_NAME }}
-    description: "正式环境"
+    description: {{environ.BK_HCM_STAGE_DESCRIPTION}}
     # 环境的英文名，蓝鲸官方网关需提供，以支持国际化
-    description_en: "Production Environment"
+    description_en: {{environ.BK_HCM_STAGE_DESCRIPTION_EN}}
     # 环境变量；如未使用，可去除此配置
     vars:
       url_path_prefix: {{ environ.BK_HCM_API_URL_PATH_PREFIX }}

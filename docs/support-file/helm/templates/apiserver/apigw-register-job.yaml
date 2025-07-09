@@ -36,6 +36,10 @@ spec:
               value: {{ include "bk-hcm.tenantID" . }}
             - name: BK_HCM_STAGE_NAME
               value: {{ .Values.apigwRegister.stageName }}
+            - name: BK_HCM_STAGE_DESCRIPTION
+              value: {{ .Values.apigwRegister.stageDescription }}
+            - name: BK_HCM_STAGE_DESCRIPTION_EN
+              value: {{ .Values.apigwRegister.stageDescriptionEn }}
             {{- if .Values.ingress.shareDomainEnable }}
             - name: BK_HCM_HOST
               value: {{ printf "%s://%s" .Values.global.bkDomainScheme .Values.ingress.host }}
