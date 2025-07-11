@@ -40,6 +40,12 @@ spec:
               value: {{ .Values.apigwRegister.stageDescription }}
             - name: BK_HCM_STAGE_DESCRIPTION_EN
               value: {{ .Values.apigwRegister.stageDescriptionEn }}
+            - name: BK_HCM_RELEASE_VERSION
+              value: {{ .Values.apigwRegister.releaseVersion }}
+            - name: BK_HCM_RELEASE_TITLE
+              value: {{ .Values.apigwRegister.releaseTitle }}
+            - name: BK_HCM_RELEASE_COMMENT
+              value: {{ .Values.apigwRegister.releaseComment }}
             {{- if .Values.ingress.shareDomainEnable }}
             - name: BK_HCM_HOST
               value: {{ printf "%s://%s" .Values.global.bkDomainScheme .Values.ingress.host }}

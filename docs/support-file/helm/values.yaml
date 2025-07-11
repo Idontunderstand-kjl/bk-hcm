@@ -662,7 +662,12 @@ apigwRegister:
   ## 网关负责人，多个使用英文逗号分隔
   maintainer: "admin"
   stageName: "prod"
-  apiUrlPathPrefix: "apigw/"
+  stageDescription: "生产环境"
+  stageDescriptionEn: "production environment"
+  releaseVersion: 1.0.0
+  releaseTitle: "1.0.0"
+  releaseComment: "1.0.0"
+  apiUrlPathPrefix: ""
   extraEnv:
   # ENV_1: "value1"
   # ENV_2: "value2"
@@ -674,6 +679,7 @@ apigwRegister:
     requests:
       memory: 512Mi
       cpu: 200m
+  cwAitsmAppCode: "cw_aitsm"
 
 # 权限中心自动注册配置
 authRegister:
